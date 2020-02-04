@@ -1,3 +1,33 @@
+<?php
+require_once("../database.php");
+require_once("../classes.php");
+$area = -1;
+if (isset($_REQUEST["area"])) {
+    $area =intval($_REQUEST["area"]);
+}
+//database connect
+$pdo = connectDatabase();
+// sql set
+$sql = "select * from restaurants where area = ?";
+//sql run
+$pstmt = $pdo->prepare($sql);
+$pstmt->bindValue(1,$area);
+$pstmt->execute();
+//結果
+$rs = $pstmt->fetchAll();
+disconnectDatabase($pdo);
+//list
+$restaurants = [];
+foreach ($rs as $record){
+    $id = intval($record["id"]);
+    $name = $record["name"];
+    $detail = $record["detail"];
+    $image = $record["image"];
+    $restaurant = new Restaurant($id,$name,$detail,$image,$area);
+    $restaurants[] = $restaurant;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="ja">
 	<head>
@@ -15,28 +45,15 @@
 				<th>画像ファイル名</th>
 				<th>地域ID</th>
 			</tr>
-						<tr>
-				<td>1</td>
-				<td>Wine Bar ENOTECA</td>
-				<td>常時10種類以上の赤・白ワインをご用意しています。
-記念日にご来店ください。</td>
-				<td>restaurant_1.jpg</td>
-				<td>2</td>
+			<?php foreach ($restaurants as $area) { ?>
+			<tr>
+				<td><?= $area->getId() ?></td>
+				<td><?= $area->getName() ?></td>
+				<td><?= $area->getDetail() ?></td>
+				<td><?= $area->getImage() ?></td>
+				<td><?= $area->getArea() ?></td>
 			</tr>
-						<tr>
-				<td>4</td>
-				<td>レストラン「有閑」</td>
-				<td>広い店内で、お昼の優雅なひと時を過ごしませんか？</td>
-				<td>restaurant_4.jpg</td>
-				<td>2</td>
-			</tr>
-						<tr>
-				<td>6</td>
-				<td>海沿いのレストラン La Mer</td>
-				<td>海が見える、海沿いのレストランです。</td>
-				<td>restaurant_6.jpg</td>
-				<td>2</td>
-			</tr>
-					</table>
+			<?php } ?>
+		</table>
 	</body>
 </html>
